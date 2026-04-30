@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VAND" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="icon" type="image/png" href="/icon-192.png" />
+    <title>VAND — Index OS</title>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(r) {
+          for (var i of r) { i.unregister(); }
+        });
+        caches.keys().then(function(n) {
+          for (var k of n) { caches.delete(k); }
+        });
+      }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body, #root { height: 100%; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        background: #000;
+        color: #fff;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+        font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      input, textarea, select { font-size: 16px; }
+      ::selection { background: #ffffff; color: #000; }
+
+      /* ───────────────────────── VAND BOOT SPLASH ───────────────────────── */
+      #vand-boot {
+        position: fixed; inset: 0; z-index: 9999;
+        background: #000;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom);
+        overflow: hidden;
+        opacity: 1;
+        transition: opacity .55s cubic-bezier(.4,0,.2,1);
+      }
+      #vand-boot::before {
+        content: "";
+        position: absolute; inset: 0;
+        background:
+          radial-gradient(ellipse at 50% 30%, rgba(255,255,255,.045), transparent 55%),
+          radial-gradient(ellipse at 50% 100%, rgba(255,255,255,.025), transparent 60%);
+        pointer-events: none;
+      }
+      #vand-boot::after {
+        content: "";
+        position: absolute; inset: 0;
+        background-image:
+          repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+        mix-blend-mode: overlay;
+        pointer-events: none;
+        opacity: .7;
+      }
+      .boot-init {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: .22em;
+        color: #7a7570;
+        text-transform: uppercase;
+        position: absolute;
+        top: calc(env(safe-area-inset-top) + 24px);
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        animation: boot-fade-in .5s ease .15s forwards;
+        white-space: nowrap;
+      }
+      .boot-init .dot {
+        display: inline-block;
+        width: 18px; text-align: left;
+        animation: boot-dots 1.4s steps(1, end) infinite;
+      }
+      @keyframes boot-dots {
+        0%   { opacity: 0; }
+        25%  { opacity: 1; }
+        50%  { opacity: 1; }
+        75%  { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      .boot-center {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 14px;
+        position: relative;
+      }
+      .boot-wordmark {
+        font-family: 'Fraunces', Georgia, serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: clamp(72px, 18vw, 132px);
+        line-height: .9;
+        letter-spacing: -.02em;
+        color: #fff;
+      }
+      .boot-wordmark span {
+        display: inline-block;
+        opacity: 0;
+        transform: translateY(20px);
+        animation: boot-letter .7s cubic-bezier(.2,.7,.2,1) forwards;
+      }
+      .boot-wordmark span:nth-child(1) { animation-delay: .35s; }
+      .boot-wordmark span:nth-child(2) { animation-delay: .45s; }
+      .boot-wordmark span:nth-child(3) { animation-delay: .55s; }
+      .boot-wordmark span:nth-child(4) { animation-delay: .65s; }
+      @keyframes boot-letter {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .boot-rule {
+        width: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #fff, transparent);
+        animation: boot-rule-grow .9s cubic-bezier(.2,.7,.2,1) .9s forwards;
+      }
+      @keyframes boot-rule-grow {
+        from { width: 0; }
+        to   { width: 220px; }
+      }
+      .boot-byline {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: .35em;
+        color: #d4d4d4;
+        text-transform: uppercase;
+        opacity: 0;
+        animation: boot-fade-in .6s ease 1.15s forwards;
+      }
+      .boot-byline em {
+        font-style: normal;
+        color: #7a7570;
+      }
+      .boot-tagline {
+        font-family: 'Fraunces', Georgia, serif;
+        font-style: italic;
+        font-weight: 300;
+        font-size: 13px;
+        color: #7a7570;
+        margin-top: 8px;
+        opacity: 0;
+        animation: boot-fade-in .6s ease 1.45s forwards;
+      }
+      .boot-typer {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom) + 28px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 10px;
+        letter-spacing: .12em;
+        color: #3a3733;
+        text-align: left;
+        width: min(280px, 80vw);
+        line-height: 1.7;
+      }
+      .boot-typer .line {
+        opacity: 0;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .boot-typer .line.l1 { animation: boot-line-in .4s ease 1.75s forwards; }
+      .boot-typer .line.l2 { animation: boot-line-in .4s ease 2.05s forwards; }
+      .boot-typer .line.l3 { animation: boot-line-in .4s ease 2.35s forwards; }
+      .boot-typer .line.l4 { animation: boot-line-in .4s ease 2.65s forwards; }
+      .boot-typer .line.ok { color: #d4d4d4; }
+      @keyframes boot-line-in {
+        from { opacity: 0; transform: translateX(-4px); }
+        to   { opacity: 1; transform: none; }
+      }
+      @keyframes boot-fade-in { to { opacity: 1; } }
+
+      /* exit */
+      #vand-boot.exiting { opacity: 0; pointer-events: none; }
+      #vand-boot.exiting .boot-wordmark {
+        transform: translateY(-4px) scale(1.02);
+        transition: transform .55s cubic-bezier(.4,0,.2,1);
+      }
+      #vand-boot.removed { display: none; }
+
+      /* ───────────────────────── DORMANT ANIMATION CLASSES ───────────────────────── */
+      .welcome-enter { animation: welcome-enter .9s cubic-bezier(.2,.7,.2,1) both; }
+      @keyframes welcome-enter {
+        from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+        to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+      }
+
+      .page-enter { animation: page-enter .42s cubic-bezier(.2,.7,.2,1) both; }
+      @keyframes page-enter {
+        from { opacity: 0; transform: translateY(10px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .metric-enter { animation: metric-enter .5s cubic-bezier(.2,.7,.2,1) both; }
+      @keyframes metric-enter {
+        from { opacity: 0; transform: translateY(8px) scale(.985); }
+        to   { opacity: 1; transform: none; }
+      }
+
+      .setup-enter { animation: setup-enter .55s cubic-bezier(.2,.7,.2,1) both; overflow: hidden; }
+      @keyframes setup-enter {
+        from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+        to   { opacity: 1; transform: none; max-height: 1200px; }
+      }
+
+      .number-pop { animation: number-pop .4s cubic-bezier(.2,1.4,.4,1) both; will-change: transform; }
+      @keyframes number-pop {
+        0%   { transform: scale(.82); opacity: .6; }
+        55%  { transform: scale(1.09); opacity: 1; }
+        100% { transform: scale(1); }
+      }
+
+      .pulse-soft { animation: pulse-soft 2.6s ease-in-out infinite; }
+      @keyframes pulse-soft {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: .55; }
+      }
+
+      .hydro-tile {
+        transition: transform .18s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+        will-change: transform;
+      }
+      .hydro-tile:active { transform: scale(.92); }
+      .hydro-tile.filled { animation: hydro-fill .5s cubic-bezier(.2,1.4,.4,1); }
+      @keyframes hydro-fill {
+        0%   { transform: scale(1); }
+        45%  { transform: scale(1.12); box-shadow: 0 0 24px rgba(255,255,255,.18); }
+        100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,255,255,0); }
+      }
+
+      .btn-press {
+        transition: transform .12s ease, background-color .18s ease, opacity .18s ease, border-color .18s ease;
+        -webkit-user-select: none; user-select: none;
+        touch-action: manipulation;
+      }
+      .btn-press:active { transform: scale(.96); opacity: .88; }
+
+      .supp-row, .goal-row {
+        animation: row-enter .45s cubic-bezier(.2,.7,.2,1) both;
+        transition: background-color .18s ease, transform .15s ease;
+      }
+      .supp-row:active, .goal-row:active {
+        background-color: rgba(255,255,255,.04);
+        transform: translateX(2px);
+      }
+      @keyframes row-enter {
+        from { opacity: 0; transform: translateX(-8px); }
+        to   { opacity: 1; transform: none; }
+      }
+      .supp-row:nth-child(1), .goal-row:nth-child(1) { animation-delay: .04s; }
+      .supp-row:nth-child(2), .goal-row:nth-child(2) { animation-delay: .08s; }
+      .supp-row:nth-child(3), .goal-row:nth-child(3) { animation-delay: .12s; }
+      .supp-row:nth-child(4), .goal-row:nth-child(4) { animation-delay: .16s; }
+      .supp-row:nth-child(5), .goal-row:nth-child(5) { animation-delay: .20s; }
+      .supp-row:nth-child(6), .goal-row:nth-child(6) { animation-delay: .24s; }
+      .supp-row:nth-child(7), .goal-row:nth-child(7) { animation-delay: .28s; }
+      .supp-row:nth-child(8), .goal-row:nth-child(8) { animation-delay: .32s; }
+
+      .nav-btn {
+        transition: color .22s ease, transform .15s ease, opacity .2s ease;
+        position: relative;
+        touch-action: manipulation;
+      }
+      .nav-btn:active { transform: scale(.9); }
+      .nav-btn::after {
+        content: "";
+        position: absolute;
+        left: 50%; bottom: -6px;
+        transform: translateX(-50%) scaleX(0);
+        width: 18px; height: 2px;
+        background: #fff;
+        border-radius: 2px;
+        transition: transform .25s cubic-bezier(.2,.7,.2,1);
+        transform-origin: center;
+      }
+      .nav-btn[aria-current="page"]::after,
+      .nav-btn.active::after,
+      .nav-btn[data-active="true"]::after {
+        transform: translateX(-50%) scaleX(1);
+      }
+
+      /* ───────────────────────── GLOBAL POLISH ───────────────────────── */
+      button, [role="button"] { touch-action: manipulation; }
+      :focus-visible {
+        outline: 1px solid rgba(255,255,255,.6);
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      a { color: inherit; }
+      ::-webkit-scrollbar { width: 0; height: 0; }
+
+      /* Apple Watch sync confirmation flash (when ?hr=, ?s=, ?st=, ?w= arrives) */
+      body.synced::before {
+        content: "";
+        position: fixed; inset: 0;
+        background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.08), transparent 50%);
+        animation: sync-flash 1.2s ease-out forwards;
+        pointer-events: none;
+        z-index: 9998;
+      }
+      @keyframes sync-flash {
+        0%   { opacity: 0; }
+        20%  { opacity: 1; }
+        100% { opacity: 0; }
+      }
+
+      /* ───────────────────────── REDUCED MOTION ───────────────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: .01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: .01ms !important;
+        }
+        #vand-boot .boot-typer,
+        #vand-boot .boot-init .dot { display: none !important; }
+        .pulse-soft { animation: none !important; }
+      }
+    </style>
+
+    <script type="module" crossorigin src="/assets/index-CSyE7Sij.js"></script>
+  </head>
+  <body>
+    <!-- VAND BOOT SPLASH -->
+    <div id="vand-boot" role="status" aria-label="Loading VAND">
+      <div class="boot-init">INITIALIZING<span class="dot">...</span></div>
+      <div class="boot-center">
+        <div class="boot-wordmark" aria-hidden="true"><span>V</span><span>A</span><span>N</span><span>D</span></div>
+        <div class="boot-rule"></div>
+        <div class="boot-byline">BY <em>QUENTIN</em></div>
+        <div class="boot-tagline">A personal operating system.</div>
+      </div>
+      <div class="boot-typer" aria-hidden="true">
+        <div class="line l1">&gt; loading commitments</div>
+        <div class="line l2">&gt; syncing health data</div>
+        <div class="line l3">&gt; preparing gym log</div>
+        <div class="line l4 ok">&gt; ready</div>
+      </div>
+    </div>
+
+    <div id="root"></div>
+
+    <script>
+      // ─── Splash dismissal ──────────────────────────────────────────────
+      (function() {
+        var boot = document.getElementById('vand-boot');
+        var root = document.getElementById('root');
+        if (!boot || !root) return;
+
+        var minShownAt = Date.now();
+        var MIN_DURATION = 2400; // let the boot sequence finish
+        var MAX_DURATION = 6000; // hard cap, never trap the user
+        var dismissed = false;
+
+        function dismiss() {
+          if (dismissed) return;
+          dismissed = true;
+          var elapsed = Date.now() - minShownAt;
+          var wait = Math.max(0, MIN_DURATION - elapsed);
+          setTimeout(function() {
+            boot.classList.add('exiting');
+            setTimeout(function() { boot.classList.add('removed'); }, 600);
+          }, wait);
+        }
+
+        // Watch for React mount
+        var mo = new MutationObserver(function() {
+          if (root.children && root.children.length > 0) {
+            mo.disconnect();
+            dismiss();
+          }
+        });
+        mo.observe(root, { childList: true, subtree: false });
+
+        // Hard cap fallback
+        setTimeout(function() { mo.disconnect(); dismiss(); }, MAX_DURATION);
+      })();
+
+      // ─── Apple Watch sync flash ───────────────────────────────────────
+      (function() {
+        try {
+          var sp = new URLSearchParams(window.location.search);
+          if (sp.has('hr') || sp.has('s') || sp.has('st') || sp.has('w')) {
+            requestAnimationFrame(function() {
+              document.body.classList.add('synced');
+              setTimeout(function() { document.body.classList.remove('synced'); }, 1300);
+            });
+          }
+        } catch (_) {}
+      })();
+
+      // ─── Global error trap (preserved from original) ──────────────────
+      window.onerror = function(msg, url, line) {
+        document.getElementById('root').innerHTML =
+          '<p style="color:#fff;font-family:monospace;text-align:center;padding:40px;font-size:12px;word-break:break-all">' +
+          'Error: ' + msg + '<br>Line: ' + line + '<br>File: ' + url + '</p>';
+        var b = document.getElementById('vand-boot');
+        if (b) b.classList.add('removed');
+      };
+    </script>
+  </body>
+</html>
